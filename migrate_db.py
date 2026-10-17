@@ -2,6 +2,7 @@
 
 Set the remote details as environment variables, then run:  python migrate_db.py
     TA_REMOTE_HOST, TA_REMOTE_PORT, TA_REMOTE_USER, TA_REMOTE_PASSWORD, TA_REMOTE_DB
+    optional: TA_REMOTE_CA = path to the provider's ca.pem (required for Aiven)
 """
 import os
 import certifi
@@ -19,7 +20,7 @@ dst = pymysql.connect(
     user=os.environ["TA_REMOTE_USER"],
     password=os.environ["TA_REMOTE_PASSWORD"],
     database=os.environ["TA_REMOTE_DB"],
-    ssl={"ca": certifi.where()},
+    ssl={"ca": os.environ.get("TA_REMOTE_CA", certifi.where())},
     cursorclass=pymysql.cursors.DictCursor,
 )
 s, d = src.cursor(), dst.cursor()

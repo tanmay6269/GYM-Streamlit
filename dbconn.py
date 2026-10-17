@@ -20,9 +20,18 @@ def _cfg():
 def get_db():
     """One place for the DB connection (credentials come from .streamlit/secrets.toml)."""
     cfg = _cfg()
-    if cfg.pop("ssl", False):  # hosted MySQL (Aiven, TiDB, ...) requires TLS
-        import certifi
-        cfg["ssl"] = {"ca": certifi.where()}
+    ca_pem = cfg.pop("ssl_ca", None)  # Aiven: paste the contents of its ca.pem in secrets
+    if cfg.pop("ssl", False) or ca_pem:  # hosted MySQL requires TLS
+        if ca_pem:
+            import hashlib, tempfile
+            path = os.path.join(tempfile.gettempdir(), "ta_ca_" + hashlib.md5(ca_pem.encode()).hexdigest() + ".pem")
+            if not os.path.exists(path):
+                with open(path, "w") as f:
+                    f.write(ca_pem)
+            cfg["ssl"] = {"ca": path}
+        else:
+            import certifi
+            cfg["ssl"] = {"ca": certifi.where()}
     return sql.connect(cursorclass=sql.cursors.DictCursor, **cfg)
 
 
