@@ -18,14 +18,14 @@ def render_header():
     [data-testid="stSidebarNav"] ul{padding:0 .4rem;gap:.3rem;}
     [data-testid="stSidebarNav"] a,
     a[data-testid="stSidebarNavLink"]{
-        font-size:1rem !important;font-weight:600 !important;
-        padding:.4rem .75rem !important;border-radius:10px !important;
+        font-size:.95rem !important;font-weight:600 !important;
+        padding:.3rem .7rem !important;border-radius:10px !important;
         background:rgba(255,255,255,.08) !important;
         border:1px solid rgba(255,255,255,.22) !important;
         margin-bottom:.1rem;transition:all .15s ease;
     }
     [data-testid="stSidebarNav"] a span,
-    a[data-testid="stSidebarNavLink"] span{font-size:1rem !important;font-weight:600 !important;}
+    a[data-testid="stSidebarNavLink"] span{font-size:.95rem !important;font-weight:600 !important;}
     [data-testid="stSidebarNav"] a:hover,
     a[data-testid="stSidebarNavLink"]:hover{
         background:rgba(255,255,255,.2) !important;border-color:#ffd700 !important;transform:translateX(3px);
@@ -35,6 +35,12 @@ def render_header():
         background:linear-gradient(45deg,#ff512f,#f09819) !important;
         border-color:#ffd700 !important;box-shadow:0 2px 10px rgba(0,0,0,.35);
     }
+    /* Streamlit puts its own height/padding on the inner elements of each option */
+    a[data-testid="stSidebarNavLink"],
+    [data-testid="stSidebarNav"] a{min-height:0 !important;height:auto !important;line-height:1.2 !important;}
+    a[data-testid="stSidebarNavLink"] > *,
+    [data-testid="stSidebarNav"] a > *{min-height:0 !important;padding-top:0 !important;padding-bottom:0 !important;margin:0 !important;}
+    [data-testid="stSidebarNav"] ul{gap:.25rem !important;}
     /* keep the Logout button right under the menu */
     [data-testid="stSidebarNav"]{padding-bottom:.4rem !important;}
     [data-testid="stSidebarUserContent"]{padding-top:.4rem !important;}
