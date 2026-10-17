@@ -1,5 +1,10 @@
 from datetime import datetime, timedelta
 import streamlit as st
+
+# streamlit-cookies-manager still calls st.cache, which new Streamlit versions removed
+if not hasattr(st, "cache"):
+    st.cache = st.cache_data
+
 from streamlit_cookies_manager import EncryptedCookieManager
 
 # ---------------- PAGE CONFIG ----------------
