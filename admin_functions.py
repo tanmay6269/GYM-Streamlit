@@ -75,8 +75,8 @@ def admin_dashboard():
         manage_payments()
 
     elif menu == "Feedback":
-        from footer import view_feedback
-        view_feedback()
+        from footer import feedback_page
+        feedback_page()
 
 def add_staff():
     st.title("[Add Staff Member]")

@@ -1,6 +1,7 @@
 import base64
 from pathlib import Path
 
+import pymysql as sql
 import streamlit as st
 
 from dbconn import get_db
@@ -12,25 +13,34 @@ def _logo_b64():
     return base64.b64encode((BASE_DIR / "gym.png").read_bytes()).decode()
 
 
-def _save_feedback(name, phone, message):
+def _ensure_table(smt):
+    smt.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            phone VARCHAR(20),
+            message TEXT NOT NULL,
+            rating TINYINT,
+            user_role VARCHAR(20),
+            user_id INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    try:  # older installs created the table without a rating column
+        smt.execute("ALTER TABLE feedback ADD COLUMN rating TINYINT")
+    except sql.err.OperationalError:
+        pass  # column already exists
+
+
+def _save_feedback(name, phone, rating, message):
     user = st.session_state.get("user", {})
     db = get_db()
     try:
         smt = db.cursor()
-        smt.execute("""
-            CREATE TABLE IF NOT EXISTS feedback (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) NOT NULL,
-                phone VARCHAR(20),
-                message TEXT NOT NULL,
-                user_role VARCHAR(20),
-                user_id INT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+        _ensure_table(smt)
         smt.execute(
-            "INSERT INTO feedback (name, phone, message, user_role, user_id) VALUES (%s, %s, %s, %s, %s)",
-            (name, phone or None, message, user.get("Role"), user.get("UserID")),
+            "INSERT INTO feedback (name, phone, rating, message, user_role, user_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            (name, phone or None, rating, message, user.get("Role"), user.get("UserID")),
         )
         db.commit()
     finally:
@@ -41,26 +51,65 @@ def feedback_form(key="footer"):
     with st.form(f"feedback_form_{key}", clear_on_submit=True):
         c1, c2 = st.columns(2)
         name = c1.text_input("Name *", value=st.session_state.get("user", {}).get("Name", ""), placeholder="Your name", key=f"fb_name_{key}")
-        phone = c2.text_input("Phone", placeholder="Your phone number", key=f"fb_phone_{key}")
-        message = st.text_area("Message *", placeholder="Tell us what you think", max_chars=1000, height=110, key=f"fb_msg_{key}")
+        phone = c2.text_input("Phone", placeholder="Your phone number (only the admin can see it)", key=f"fb_phone_{key}")
+        st.write("Rating *")
+        stars = st.feedback("stars", key=f"fb_stars_{key}")
+        message = st.text_area("Comment", placeholder="Tell us what you think", max_chars=1000, height=110, key=f"fb_msg_{key}")
         sent = st.form_submit_button("Send feedback")
     if sent:
-        if not name.strip() or not message.strip():
-            st.error("Name and message are required.")
+        if not name.strip():
+            st.error("Name is required.")
+        elif stars is None:
+            st.error("Please choose a star rating.")
         elif phone.strip() and not (phone.strip().isdigit() and 7 <= len(phone.strip()) <= 15):
             st.error("Phone must be 7 to 15 digits.")
         else:
             try:
-                _save_feedback(name.strip(), phone.strip(), message.strip())
-                st.success("Thank you! Your feedback has been sent.")
+                _save_feedback(name.strip(), phone.strip(), stars + 1, message.strip())
+                st.success("Thank you! Your feedback has been posted.")
             except Exception as e:
                 st.error(f"Could not save feedback: {e}")
+
+
+def feedback_thread():
+    """Chat-style list of all feedback, newest first, with star ratings."""
+    is_admin = st.session_state.get("user", {}).get("Role") == "Admin"
+    db = get_db()
+    try:
+        smt = db.cursor()
+        _ensure_table(smt)
+        smt.execute("SELECT id, created_at, name, phone, rating, message, user_role FROM feedback ORDER BY id DESC LIMIT 100")
+        rows = smt.fetchall()
+    finally:
+        db.close()
+
+    st.subheader("💬 What members are saying")
+    if not rows:
+        st.info("No feedback yet. Be the first to share your thoughts!")
+        return
+
+    rated = [r["rating"] for r in rows if r["rating"]]
+    c1, c2 = st.columns(2)
+    c1.metric("Average rating", f"{sum(rated) / len(rated):.1f} / 5" if rated else "-")
+    c2.metric("Total feedback", len(rows))
+
+    for r in rows:
+        stars = ("★" * r["rating"] + "☆" * (5 - r["rating"])) if r["rating"] else ""
+        with st.chat_message("user", avatar="🏋️"):
+            st.markdown(f"**{r['name']}** &nbsp; <span style='color:#f59e0b;font-size:18px'>{stars}</span>", unsafe_allow_html=True)
+            if r["message"]:
+                st.write(r["message"])
+            when = r["created_at"].strftime("%d %b %Y, %I:%M %p") if r["created_at"] else ""
+            extra = f" • {r['user_role']}" + (f" • 📞 {r['phone']}" if r["phone"] else "") if is_admin else ""
+            st.caption(when + extra)
 
 
 def feedback_page():
     st.title("[Send Feedback]")
     st.markdown("---")
     feedback_form(key="page")
+    st.markdown("---")
+    feedback_thread()
 
 
 def render_footer():
@@ -107,7 +156,7 @@ def render_footer():
         with left:
             st.markdown('<div class="ta-eyebrow">HELP US IMPROVE</div>', unsafe_allow_html=True)
             st.subheader("Send your feedback")
-            st.caption("Your message is saved for the TA Fitness team to read.")
+            st.caption("Your rating and comment are posted in the app on the Feedback page.")
         with right:
             feedback_form()
 
@@ -119,23 +168,3 @@ def render_footer():
 <span>Train • Track • Transform</span>
 </div>
 """, unsafe_allow_html=True)
-
-
-def view_feedback():
-    """Admin: list every feedback message that has been sent."""
-    st.title("[Feedback Received]")
-    st.markdown("---")
-    db = get_db()
-    try:
-        smt = db.cursor()
-        smt.execute("SELECT id, created_at, name, phone, user_role, message FROM feedback ORDER BY id DESC")
-        rows = smt.fetchall()
-    except Exception:
-        rows = []
-    finally:
-        db.close()
-    if rows:
-        st.metric("Total feedback", len(rows))
-        st.dataframe(rows, width="stretch", hide_index=True)
-    else:
-        st.info("No feedback yet.")
