@@ -124,9 +124,10 @@ if st.session_state.logged_in:
         if st.button("🚪 Logout", width="stretch"):
             _logout()
 
-    from GYM import render_header
+    from GYM import apply_theme
     from footer import render_footer
-    render_header()
+    st.session_state['_pages'] = pages
+    apply_theme()
     current.run()
     render_footer(role, pages, show_latest=(current.url_path != "feedback"))
 else:

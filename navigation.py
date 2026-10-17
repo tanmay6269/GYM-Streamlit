@@ -100,6 +100,11 @@ def _quiz():
 
 
 # ---------------- Shared ----------------
+def _home():
+    from GYM import render_home
+    render_home()
+
+
 def _feedback():
     from footer import feedback_page
     feedback_page()
@@ -107,6 +112,7 @@ def _feedback():
 
 # key -> (function, title, material icon, url path)
 _ADMIN = [
+    ("home", _home, "Home", ":material/home:", ""),
     ("insert", _insert_member, "Insert Member", ":material/person_add:", "insert-member"),
     ("all", _display_all, "Display All Members", ":material/groups:", "all-members"),
     ("search", _search_member, "Search Member By ID", ":material/search:", "search-member"),
@@ -120,6 +126,7 @@ _ADMIN = [
     ("feedback", _feedback, "Feedback", ":material/forum:", "feedback"),
 ]
 _TEAM = [
+    ("home", _home, "Home", ":material/home:", ""),
     ("search", _search_member, "Search Member", ":material/search:", "search-member"),
     ("edit", _edit_member, "Edit Member", ":material/edit:", "edit-member"),
     ("attendance", _attendance, "Attendance", ":material/fact_check:", "attendance"),
@@ -127,6 +134,7 @@ _TEAM = [
     ("feedback", _feedback, "Feedback", ":material/forum:", "feedback"),
 ]
 _MEMBER = [
+    ("home", _home, "Home", ":material/home:", ""),
     ("profile", _my_profile, "My Profile", ":material/account_circle:", "my-profile"),
     ("membership", _my_membership, "My Membership", ":material/calendar_month:", "my-membership"),
     ("attendance", _my_attendance, "My Attendance", ":material/fact_check:", "my-attendance"),

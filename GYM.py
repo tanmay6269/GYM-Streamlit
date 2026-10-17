@@ -5,8 +5,8 @@ import streamlit as st
 BASE_DIR = Path(__file__).parent
 
 
-def render_header():
-    """Background, theme CSS, banner, offers ticker and plan cards shown above every page."""
+def apply_theme():
+    """Background, sidebar and theme styling applied to every page."""
     st.logo(str(BASE_DIR / "gym.png"), size="large")
     # make the sidebar logo bigger than Streamlit's default
     st.markdown("""
@@ -132,6 +132,9 @@ def render_header():
     </style>
     """, unsafe_allow_html=True)
 
+
+def render_home():
+    """Home page: banner, offers ticker, plan cards and quick links."""
     # ---------------- HEADER ---------------- #
     col1, col2, col3 = st.columns([1,3,1])
 
@@ -213,3 +216,17 @@ def render_header():
 
     </div>
     """, unsafe_allow_html=True)
+
+
+    # ================= QUICK ACCESS =================
+    pages = st.session_state.get("_pages", {})
+    user = st.session_state.get("user", {})
+    st.markdown(f"### 👋 Welcome back, {user.get('Name', '')}!")
+    st.caption(f"Signed in as {user.get('Role', '')} - pick an option below or from the menu on the left.")
+    keys = [k for k in pages if k != "home"]
+    for start in range(0, len(keys), 3):
+        cols = st.columns(3)
+        for col, key in zip(cols, keys[start:start + 3]):
+            with col:
+                with st.container(border=True):
+                    st.page_link(pages[key], label=pages[key].title, icon=pages[key].icon, width="stretch")
