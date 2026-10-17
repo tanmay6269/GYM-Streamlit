@@ -15,17 +15,17 @@ def render_header():
     [data-testid="stSidebarHeader"] img,
     img[data-testid="stLogo"]{height:11rem !important;max-height:11rem !important;width:auto !important;max-width:92% !important;}
     /* sidebar menu: bigger text, each option in its own box */
-    [data-testid="stSidebarNav"] ul{padding:0 .4rem;gap:.45rem;}
+    [data-testid="stSidebarNav"] ul{padding:0 .4rem;gap:.3rem;}
     [data-testid="stSidebarNav"] a,
     a[data-testid="stSidebarNavLink"]{
-        font-size:1.08rem !important;font-weight:600 !important;
-        padding:.7rem .9rem !important;border-radius:12px !important;
+        font-size:1rem !important;font-weight:600 !important;
+        padding:.4rem .75rem !important;border-radius:10px !important;
         background:rgba(255,255,255,.08) !important;
         border:1px solid rgba(255,255,255,.22) !important;
         margin-bottom:.1rem;transition:all .15s ease;
     }
     [data-testid="stSidebarNav"] a span,
-    a[data-testid="stSidebarNavLink"] span{font-size:1.08rem !important;font-weight:600 !important;}
+    a[data-testid="stSidebarNavLink"] span{font-size:1rem !important;font-weight:600 !important;}
     [data-testid="stSidebarNav"] a:hover,
     a[data-testid="stSidebarNavLink"]:hover{
         background:rgba(255,255,255,.2) !important;border-color:#ffd700 !important;transform:translateX(3px);
