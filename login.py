@@ -4,10 +4,6 @@ import streamlit as st
 import time as t
 from datetime import datetime
 
-# ❌ REMOVE THIS - cookies will be imported from app
-# cookies = EncryptedCookieManager(...)
-# if not cookies.ready():
-#     st.stop()
 
 def load():
     status = st.empty()
@@ -23,7 +19,7 @@ def login():
 
     # Get cookies from session state (set by app.py)
     cookies = st.session_state.get('_cookies')
-    if not cookies:
+    if cookies is None:
         st.error("Session error. Please refresh.")
         return
 
