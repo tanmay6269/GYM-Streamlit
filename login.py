@@ -14,7 +14,7 @@ def load():
         t.sleep(0.0005)
     status.text("Completed")
 
-@st.dialog("              TA Fitness User Login                 ")
+@st.dialog("              TA Fitness User Login                 ", dismissible=False)
 def login():
 
     # Get cookies from session state (set by app.py)
@@ -35,6 +35,8 @@ def login():
         if valid_id(id) is None:
             st.error("❌ Invalid ID, Name or Password")
             return
+        id = str(valid_id(id))  # " 12 " -> "12", so the cookie restores after a refresh
+        name = name.strip()
 
         try:
             db = get_db()
@@ -78,6 +80,7 @@ def login():
                     }
 
                 st.session_state.logged_in = True
+                st.session_state.pop("_logged_out", None)
                 st.session_state.login_time = datetime.now()
 
                 # Save to cookies

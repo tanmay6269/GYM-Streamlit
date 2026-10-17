@@ -177,5 +177,10 @@ def build_pages(role):
     return ordered, pages
 
 
+def all_url_paths():
+    """Every page address used by any role (e.g. "my-attendance"), without the home page."""
+    return sorted({path for spec in _ROLES.values() for (_, _, _, _, path) in spec if path})
+
+
 def footer_layout(role):
     return _FOOTER[role]
