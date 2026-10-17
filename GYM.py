@@ -7,7 +7,15 @@ BASE_DIR = Path(__file__).parent
 
 def render_header():
     """Background, theme CSS, banner, offers ticker and plan cards shown above every page."""
-    st.logo(str(BASE_DIR / "gym.png"))
+    st.logo(str(BASE_DIR / "gym.png"), size="large")
+    # make the sidebar logo bigger than Streamlit's default
+    st.markdown("""
+    <style>
+    [data-testid="stSidebarHeader"]{height:auto !important;min-height:9rem;align-items:center;justify-content:center;padding-top:1rem;}
+    [data-testid="stSidebarHeader"] img,
+    img[data-testid="stLogo"]{height:8rem !important;max-height:8rem !important;width:auto !important;max-width:80% !important;}
+    </style>
+    """, unsafe_allow_html=True)
     with open(BASE_DIR / "background.jpg", "rb") as f:
         data = base64.b64encode(f.read()).decode()
 
