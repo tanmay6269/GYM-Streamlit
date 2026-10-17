@@ -94,9 +94,11 @@ if "login_time" in st.session_state:
 
 # ---------------- HOME PAGE ----------------
 def _logout():
+    # forget everything the previous user did (quiz, searches, forms) but keep the cookie manager
+    for key in list(st.session_state.keys()):
+        if key != "_cookies":
+            del st.session_state[key]
     st.session_state.logged_in = False
-    for key in ("login_time", "user"):
-        st.session_state.pop(key, None)
     cookies["logged_in"] = "False"
     cookies["Role"] = ""
     cookies["id"] = ""
@@ -131,5 +133,13 @@ if st.session_state.logged_in:
     current.run()
     render_footer(role, pages, show_latest=(current.url_path != "feedback"))
 else:
-    from login import login
-    login()
+    # Logged out: replace the navigation with a single hidden "Login" page so the
+    # old menu and the old page address (e.g. /my-attendance) disappear.
+    def _login_screen():
+        from login import login
+        login()
+
+    st.navigation(
+        [st.Page(_login_screen, title="Login", url_path="login", default=True)],
+        position="hidden",
+    ).run()
