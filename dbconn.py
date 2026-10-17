@@ -8,13 +8,19 @@ def _cfg():
     try:
         return dict(st.secrets["mysql"])
     except Exception:
+        pass
+    if os.environ.get("TA_DB_HOST"):
         return {
-            "host": os.environ.get("TA_DB_HOST", "localhost"),
+            "host": os.environ["TA_DB_HOST"],
             "port": int(os.environ.get("TA_DB_PORT", 3306)),
             "user": os.environ.get("TA_DB_USER", "root"),
             "password": os.environ.get("TA_DB_PASSWORD", ""),
             "database": os.environ.get("TA_DB_NAME", "ta_fitness"),
         }
+    raise RuntimeError(
+        "Database settings not found. Add a [mysql] section to the app's Secrets "
+        "(Streamlit Cloud: Manage app > Settings > Secrets) or to .streamlit/secrets.toml."
+    )
 
 
 def get_db():
