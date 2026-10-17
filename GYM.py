@@ -11,9 +11,33 @@ def render_header():
     # make the sidebar logo bigger than Streamlit's default
     st.markdown("""
     <style>
-    [data-testid="stSidebarHeader"]{height:auto !important;min-height:9rem;align-items:center;justify-content:center;padding-top:1rem;}
+    [data-testid="stSidebarHeader"]{height:auto !important;min-height:12.5rem;align-items:center;justify-content:center;padding-top:1rem;}
     [data-testid="stSidebarHeader"] img,
-    img[data-testid="stLogo"]{height:8rem !important;max-height:8rem !important;width:auto !important;max-width:80% !important;}
+    img[data-testid="stLogo"]{height:11rem !important;max-height:11rem !important;width:auto !important;max-width:92% !important;}
+    /* sidebar menu: bigger text, each option in its own box */
+    [data-testid="stSidebarNav"] ul{padding:0 .4rem;gap:.45rem;}
+    [data-testid="stSidebarNav"] a,
+    a[data-testid="stSidebarNavLink"]{
+        font-size:1.08rem !important;font-weight:600 !important;
+        padding:.7rem .9rem !important;border-radius:12px !important;
+        background:rgba(255,255,255,.08) !important;
+        border:1px solid rgba(255,255,255,.22) !important;
+        margin-bottom:.1rem;transition:all .15s ease;
+    }
+    [data-testid="stSidebarNav"] a span,
+    a[data-testid="stSidebarNavLink"] span{font-size:1.08rem !important;font-weight:600 !important;}
+    [data-testid="stSidebarNav"] a:hover,
+    a[data-testid="stSidebarNavLink"]:hover{
+        background:rgba(255,255,255,.2) !important;border-color:#ffd700 !important;transform:translateX(3px);
+    }
+    [data-testid="stSidebarNav"] a[aria-current="page"],
+    a[data-testid="stSidebarNavLink"][aria-current="page"]{
+        background:linear-gradient(45deg,#ff512f,#f09819) !important;
+        border-color:#ffd700 !important;box-shadow:0 2px 10px rgba(0,0,0,.35);
+    }
+    /* keep the Logout button right under the menu */
+    [data-testid="stSidebarNav"]{padding-bottom:.4rem !important;}
+    [data-testid="stSidebarUserContent"]{padding-top:.4rem !important;}
     </style>
     """, unsafe_allow_html=True)
     with open(BASE_DIR / "background.jpg", "rb") as f:

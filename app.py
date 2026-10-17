@@ -121,7 +121,6 @@ if st.session_state.logged_in:
     current = st.navigation(ordered_pages)
 
     with st.sidebar:
-        st.markdown("<br>" * 5, unsafe_allow_html=True)
         if st.button("🚪 Logout", width="stretch"):
             _logout()
 
