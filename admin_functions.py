@@ -1,82 +1,8 @@
 from dbconn import get_db, hash_password
 import streamlit as st
-from streamlit_option_menu import option_menu
-from code1 import insert_member
-from code2 import display_all_members
-from code3 import search_memberById
-from code4 import edit_member
-from code5 import delete_member
 import pymysql as sql
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-
-def admin_dashboard():
-    with st.sidebar:
-        menu = option_menu(
-            "🏋️ GYM MANAGEMENT",
-            [
-                "Insert Member",
-                "Display All Members",
-                "Search Member By ID",
-                "Edit Member",
-                "Delete Member",
-                "Add Staff",
-                "Edit Staff",
-                "View Reports",
-                "Membership Renewal",
-                "Payments",
-                "Feedback"
-            ],
-            icons=[
-                "person-plus-fill",
-                "people-fill",
-                "search",
-                "pencil-square",
-                "trash-fill",
-                "person-plus",
-                "person-gear",
-                "graph-up",
-                "arrow-repeat",
-                "cash-coin",
-                "chat-dots"
-            ],
-            menu_icon="activity",
-            default_index=0
-        )
-
-    if menu == "Insert Member":
-        insert_member()
-
-    elif menu == "Display All Members":
-        display_all_members()
-
-    elif menu == "Search Member By ID":
-        search_memberById()
-
-    elif menu == "Edit Member":
-        edit_member()
-
-    elif menu == "Delete Member":
-        delete_member()
-
-    elif menu == "Add Staff":
-        add_staff()
-
-    elif menu == "Edit Staff":
-        edit_staff()
-
-    elif menu == "View Reports":
-        view_reports()
-
-    elif menu == "Membership Renewal":
-        admin_renew_membership()
-
-    elif menu == "Payments":
-        manage_payments()
-
-    elif menu == "Feedback":
-        from footer import feedback_page
-        feedback_page()
 
 def add_staff():
     st.title("[Add Staff Member]")

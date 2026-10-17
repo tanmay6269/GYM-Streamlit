@@ -1,7 +1,6 @@
 from dbconn import get_db, hash_password
 from validators import valid_date
 import streamlit as st
-from streamlit_option_menu import option_menu
 import pymysql as sql
 from datetime import datetime, timedelta
 from PIL import Image
@@ -10,55 +9,6 @@ import calendar
 
 PHOTO_DIR = Path(__file__).parent / "profile_photos"
 LOGO = str(Path(__file__).parent / "gym.png")
-
-def member_dashboard():
-    member_id = st.session_state.user.get("UserID")
-    member_name = st.session_state.user.get("Name", "Member")
-
-    with st.sidebar:
-        option = option_menu(
-            f"Welcome, {member_name}!",
-            [
-                "My Profile",
-                "My Membership",
-                "My Attendance",
-                "Payment History",
-                "Fitness Quiz 🏆",
-                "Feedback"
-            ],
-            icons=[
-                "person-circle",
-                "calendar-check",
-                "clipboard-check",
-                "credit-card",
-                "trophy",
-                "chat-dots"
-            ],
-            menu_icon="person-fill",
-            default_index=0
-        )
-
-    if option == "My Profile":
-        display_member_profile(member_id)
-
-    elif option == "My Membership":
-        display_membership_details(member_id)
-
-    elif option == "My Attendance":
-        display_attendance(member_id)
-
-    elif option == "Payment History":
-        display_payment_history(member_id)
-
-    elif option == "Fitness Quiz 🏆":
-        fitness_quiz(member_id)
-
-    elif option == "Feedback":
-        from footer import feedback_page
-        feedback_page()
-
-# ---------------------------------------------------------------
-# ---------------------------------------------------------------
 
 def display_member_profile(member_id):
     st.title("👤 My Profile")

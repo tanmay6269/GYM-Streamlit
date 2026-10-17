@@ -93,25 +93,43 @@ if "login_time" in st.session_state:
         st.rerun()
 
 # ---------------- HOME PAGE ----------------
+def _logout():
+    st.session_state.logged_in = False
+    for key in ("login_time", "user"):
+        st.session_state.pop(key, None)
+    cookies["logged_in"] = "False"
+    cookies["Role"] = ""
+    cookies["id"] = ""
+    cookies["User_name"] = ""
+    cookies["member_id"] = ""
+    cookies.save()
+    st.rerun()
+
+
 if st.session_state.logged_in:
-    from GYM import Home
-    Home()
+    if "user" not in st.session_state:
+        _logout()
+
+    from navigation import build_pages
+    role = st.session_state.user.get("Role")
+    ordered_pages, pages = build_pages(role)
+    if not ordered_pages:  # unknown role: never fall back to a dashboard
+        _logout()
+
+    # every menu option is its own page with its own URL, so the browser's
+    # back / forward arrows move between options instead of leaving the site
+    current = st.navigation(ordered_pages)
 
     with st.sidebar:
         st.markdown("<br>" * 5, unsafe_allow_html=True)
-        if st.button("🚪 Logout", width='stretch'):
-            st.session_state.logged_in = False
-            if "login_time" in st.session_state:
-                del st.session_state.login_time
-            if "user" in st.session_state:
-                del st.session_state.user
-            cookies["logged_in"] = "False"
-            cookies["Role"] = ""
-            cookies["id"] = ""
-            cookies["User_name"] = ""
-            cookies["member_id"] = ""
-            cookies.save()
-            st.rerun()
+        if st.button("🚪 Logout", width="stretch"):
+            _logout()
+
+    from GYM import render_header
+    from footer import render_footer
+    render_header()
+    current.run()
+    render_footer(role, pages, show_latest=(current.url_path != "feedback"))
 else:
     from login import login
     login()

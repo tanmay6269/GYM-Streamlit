@@ -5,13 +5,9 @@ import streamlit as st
 BASE_DIR = Path(__file__).parent
 
 
-def Home():
-    # Never fall back to a privileged dashboard when the session has no user
-    if "user" not in st.session_state:
-        st.session_state.logged_in = False
-        st.rerun()
-    role = st.session_state.user.get("Role")
-
+def render_header():
+    """Background, theme CSS, banner, offers ticker and plan cards shown above every page."""
+    st.logo(str(BASE_DIR / "gym.png"))
     with open(BASE_DIR / "background.jpg", "rb") as f:
         data = base64.b64encode(f.read()).decode()
 
@@ -179,22 +175,3 @@ def Home():
 
     </div>
     """, unsafe_allow_html=True)
-
-    # ---------------- SIDEBAR ---------------- #
-    st.sidebar.image(str(BASE_DIR / "gym.png"), width="stretch")
-
-    # ---------------- DASHBOARD (by role) ---------------- #
-    if role == 'Admin':
-        from admin_functions import admin_dashboard
-        admin_dashboard()
-    elif role == 'Member':
-        from member_functions import member_dashboard
-        member_dashboard()
-    else:
-        from team_functions import team_dashboard
-        team_dashboard()
-
-
-    # ---------------- FOOTER ---------------- #
-    from footer import render_footer
-    render_footer()

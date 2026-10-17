@@ -1,49 +1,8 @@
 from dbconn import get_db
 import streamlit as st
-from streamlit_option_menu import option_menu
-from code3 import search_memberById
-from code4 import edit_member
 import pymysql as sql
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
-def team_dashboard():
-    with st.sidebar:
-        option = option_menu(
-            "Team",
-            [
-                "Search Member",
-                "Edit Member",
-                "Attendance",
-                "Renew Membership",
-                "Feedback"
-            ],
-            icons=[
-                "search",
-                "pencil-square",
-                "clipboard-check",
-                "arrow-repeat",
-                "chat-dots"
-            ],
-            menu_icon="people-fill",
-            default_index=0
-        )
-
-    if option == "Search Member":
-        search_memberById()
-
-    elif option == "Edit Member":
-        edit_member()
-
-    elif option == "Attendance":
-        mark_attendance()
-
-    elif option == "Renew Membership":
-        team_renew_membership()
-
-    elif option == "Feedback":
-        from footer import feedback_page
-        feedback_page()
 
 def mark_attendance():
     st.title("[Mark Attendance]")
