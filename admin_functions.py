@@ -24,7 +24,8 @@ def admin_dashboard():
                 "Edit Staff",
                 "View Reports",
                 "Membership Renewal",
-                "Payments"
+                "Payments",
+                "Feedback"
             ],
             icons=[
                 "person-plus-fill",
@@ -36,7 +37,8 @@ def admin_dashboard():
                 "person-gear",
                 "graph-up",
                 "arrow-repeat",
-                "cash-coin"
+                "cash-coin",
+                "chat-dots"
             ],
             menu_icon="activity",
             default_index=0
@@ -71,6 +73,10 @@ def admin_dashboard():
 
     elif menu == "Payments":
         manage_payments()
+
+    elif menu == "Feedback":
+        from footer import view_feedback
+        view_feedback()
 
 def add_staff():
     st.title("[Add Staff Member]")

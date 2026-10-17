@@ -23,14 +23,16 @@ def member_dashboard():
                 "My Membership",
                 "My Attendance",
                 "Payment History",
-                "Fitness Quiz 🏆"
+                "Fitness Quiz 🏆",
+                "Feedback"
             ],
             icons=[
                 "person-circle",
                 "calendar-check",
                 "clipboard-check",
                 "credit-card",
-                "trophy"
+                "trophy",
+                "chat-dots"
             ],
             menu_icon="person-fill",
             default_index=0
@@ -50,6 +52,10 @@ def member_dashboard():
 
     elif option == "Fitness Quiz 🏆":
         fitness_quiz(member_id)
+
+    elif option == "Feedback":
+        from footer import feedback_page
+        feedback_page()
 
 # ---------------------------------------------------------------
 # ---------------------------------------------------------------

@@ -15,13 +15,15 @@ def team_dashboard():
                 "Search Member",
                 "Edit Member",
                 "Attendance",
-                "Renew Membership"
+                "Renew Membership",
+                "Feedback"
             ],
             icons=[
                 "search",
                 "pencil-square",
                 "clipboard-check",
-                "arrow-repeat"
+                "arrow-repeat",
+                "chat-dots"
             ],
             menu_icon="people-fill",
             default_index=0
@@ -38,6 +40,10 @@ def team_dashboard():
 
     elif option == "Renew Membership":
         team_renew_membership()
+
+    elif option == "Feedback":
+        from footer import feedback_page
+        feedback_page()
 
 def mark_attendance():
     st.title("[Mark Attendance]")

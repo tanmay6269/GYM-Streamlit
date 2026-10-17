@@ -196,12 +196,5 @@ def Home():
 
 
     # ---------------- FOOTER ---------------- #
-    st.markdown("""
-    <br><br>
-    <hr>
-    <center>
-    <h4 style='color:dark blue'>
-    🏆 TA FITNESS GYM | Strength • Discipline • Results 💪
-    </h4>
-    </center>
-    """, unsafe_allow_html=True)
+    from footer import render_footer
+    render_footer()
