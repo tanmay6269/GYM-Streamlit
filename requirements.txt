@@ -1,0 +1,10 @@
+streamlit>=1.50
+streamlit-option-menu
+streamlit-cookies-manager
+PyMySQL
+bcrypt
+pandas
+plotly
+pillow
+python-dateutil
+certifi

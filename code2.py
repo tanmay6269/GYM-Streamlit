@@ -1,16 +1,16 @@
 # Display Record....
 
+from dbconn import get_db
 import streamlit as st
-import pymysql as sql
 
 def display_all_members():
     st.title("[Display All Records]")
     try:
-        db=sql.connect(host='localhost',port=3306,user='root',password='1234',database='TA_Fitness',cursorclass=sql.cursors.DictCursor)
+        db=get_db()
         smt=db.cursor()
-        smt.execute('Select * from Members')
+        smt.execute('Select * from members')
         records=smt.fetchall()
-        st.dataframe(records)
+        st.dataframe([{k: v for k, v in r.items() if k.lower() != 'password'} for r in records])
         db.close()
     except Exception as e:
         st.error(e)

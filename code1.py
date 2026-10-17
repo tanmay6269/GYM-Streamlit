@@ -1,6 +1,7 @@
 # Insert Record.....
+from dbconn import get_db, hash_password
+from validators import valid_id, valid_date, valid_mobile
 import streamlit as st
-import pymysql as sql
 from dateutil.relativedelta import relativedelta
 from login import load
 
@@ -9,7 +10,7 @@ from login import load
 def insert_member():
     # Get user role from session state instead of cookies
     user_cookie = st.session_state.user.get("Role", "Member") if "user" in st.session_state else "Member"
-    
+
 # -----------------------------------------------------------Admin--------------------------------------------------------
     if user_cookie == 'Admin':
         mid = st.text_input("Enter Member ID:")
@@ -44,30 +45,33 @@ def insert_member():
         mob = st.text_input("Enter Mobile Number:")
 
         if st.button("Submit"):
+            if valid_id(mid) is None:
+                st.error("Member ID must be a number")
+                return
+            if valid_date(dob) is None:
+                st.error("Date Of Birth must be a valid date in YYYY-MM-DD format")
+                return
+            if valid_mobile(mob) is None:
+                st.error("Mobile Number must be 7 to 15 digits")
+                return
+            if not mn.strip():
+                st.error("Member Name is required")
+                return
+            dob = valid_date(dob)
+            db = None
             try:
-                db = sql.connect(host='localhost',port=3306,user='root',password='1234',database='TA_Fitness',cursorclass=sql.cursors.DictCursor)
+                db = get_db()
                 smt = db.cursor()
-                q = f"""
-                    INSERT INTO members (memberid, membername, dob, gender, address, membershipstart, membershipend, membershipplan, mobilenumber) 
-                    VALUES ({mid},'{mn}','{dob}','{mg}','{mc}','{msd}','{med}','{plan}','{mob}')
+                q = """
+                    INSERT INTO members (memberid, membername, dob, gender, address, membershipstart, membershipend, membershipplan, mobilenumber, Password)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """
-                smt.execute(q)
+                smt.execute(q, (mid, mn, dob, mg, mc, msd, med, plan, mob, hash_password(mid)))
                 load()
                 db.commit()
                 st.success("Member Submitted Successfully...")
             except Exception as e:
                 st.error(e)
             finally:
-                db.close()
-
-# -----------------------------------------------------------Member--------------------------------------------------------
-
-    elif user_cookie == 'Member':
-        # Member dashboard is handled in member_functions.py
-        pass
-
-# -----------------------------------------------------------Team--------------------------------------------------------
-
-    else:
-        # Team dashboard is handled in team_functions.py
-        pass
+                if db:
+                    db.close()

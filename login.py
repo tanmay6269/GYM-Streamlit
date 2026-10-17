@@ -1,5 +1,6 @@
+from dbconn import get_db, check_password, lockout_remaining, record_failure, clear_failures
+from validators import valid_id
 import streamlit as st
-import pymysql as sql    
 import time as t
 from datetime import datetime
 
@@ -19,45 +20,53 @@ def load():
 
 @st.dialog("              TA Fitness User Login                 ")
 def login():
-    # ✅ Import cookies here from app
-    from streamlit_cookies_manager import EncryptedCookieManager
-    import streamlit as st
-    
+
     # Get cookies from session state (set by app.py)
     cookies = st.session_state.get('_cookies')
     if not cookies:
         st.error("Session error. Please refresh.")
         return
-    
+
     id = st.text_input("Enter User Id:")
     name = st.text_input("Enter User Name:")
     pwd = st.text_input("Enter Password:", type='password')
     Role = st.selectbox("Login As", ["Admin", "Team", "Member"])
-    
-    if st.button("🚀 Login", use_container_width=True):
+
+    if st.button("🚀 Login", width='stretch'):
         if id == "" or name == "" or pwd == "":
             st.warning("Please Fill All Fields")
             return
-        
+        if valid_id(id) is None:
+            st.error("❌ Invalid ID, Name or Password")
+            return
+
         try:
-            db = sql.connect(
-                host='localhost',
-                port=3306,
-                user='root',
-                password='1234',
-                database='TA_fitness',
-                cursorclass=sql.cursors.DictCursor
-            )
+            db = get_db()
             smt = db.cursor()
-            
+
+            login_key = f"{Role}:{id}"
+            wait = lockout_remaining(smt, login_key)
+            if wait:
+                db.close()
+                st.error(f"🔒 Too many failed attempts. Try again in about {wait} minute(s).")
+                return
+
             if Role == "Member":
-                smt.execute(f"SELECT * FROM members WHERE memberid={id} AND membername='{name}' AND Password={pwd}")
+                smt.execute("SELECT * FROM members WHERE memberid=%s AND membername=%s", (id, name))
             else:
-                smt.execute(f"SELECT * FROM user_login WHERE User_id={id} AND User_Name='{name}' AND Password={pwd} AND Role='{Role}'")
-            
+                smt.execute("SELECT * FROM user_login WHERE User_id=%s AND User_Name=%s AND Role=%s", (id, name, Role))
+
             record = smt.fetchone()
+            if record and not check_password(pwd, record['Password']):
+                record = None
+            if record:
+                clear_failures(smt, login_key)
+            else:
+                record_failure(smt, login_key)
+            db.commit()
+            db.close()
             load()
-            
+
             if record:
                 if Role == "Member":
                     st.session_state.user = {
@@ -71,35 +80,35 @@ def login():
                         "Name": record['User_Name'],
                         "Role": Role
                     }
-                
+
                 st.session_state.logged_in = True
                 st.session_state.login_time = datetime.now()
-                
+
                 # Save to cookies
                 cookies["logged_in"] = "True"
+                cookies["login_time"] = st.session_state.login_time.isoformat()
                 cookies["id"] = str(id)
                 cookies["Role"] = Role
                 cookies["User_name"] = st.session_state.user["Name"]
-                
+
                 if Role == "Member":
                     cookies["member_id"] = str(record['memberid'])
                 else:
                     cookies["member_id"] = "0"
-                
+
                 cookies.save()
-                
+
                 st.success("Login Successful....")
-                
+
                 if Role == "Member":
                     st.success(f"Welcome {record['membername']} 🏋️")
                 else:
                     st.success(f"Welcome {record['User_Name']} 🏋️")
-                
+
                 t.sleep(1)
                 st.rerun()
             else:
                 st.error("❌ Invalid ID, Name or Password")
-                db.close()
-                
+
         except Exception as e:
             st.error(f"Database Error : {e}")
