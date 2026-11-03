@@ -602,6 +602,9 @@ def _arnold_view():
         st.markdown("<div class='pub ar-disc'>Answers are written by AI and can be wrong. Do not share personal or medical details "
                     "here. Voice typing uses your browser's own speech service; this app never records audio. "
                     + html.escape(advisor.DISCLAIMER) + "</div>", unsafe_allow_html=True)
+        _, rcol, _ = st.columns([1, 1.6, 1])
+        rcol.button("Check a health report (PDF)", key="arnold_report", icon=":material/description:",
+                    on_click=_open_report_tool, width="stretch")
         pending = st.session_state.pop("_pending_q", None)
         if prompt:
             pending = (prompt, None)
@@ -760,9 +763,111 @@ SAFE_GROUPS = [("Heart and chest", "cardiology", [0, 1, 2]), ("Balance", "access
                ("Bones and joints", "orthopedics", [4]), ("Medicines and other reasons", "medication", [5, 6])]
 
 
+RC_FIELDS = [("sys", "Blood pressure: upper (systolic), mmHg", 60.0, 260.0, 1.0),
+             ("dia", "Blood pressure: lower (diastolic), mmHg", 30.0, 160.0, 1.0),
+             ("sugar", "Fasting blood sugar, mg/dL", 20.0, 600.0, 1.0),
+             ("hba1c", "HbA1c, %", 3.0, 20.0, 0.1),
+             ("chol", "Total cholesterol, mg/dL", 50.0, 500.0, 1.0),
+             ("ldl", "LDL cholesterol, mg/dL", 10.0, 400.0, 1.0),
+             ("hb", "Haemoglobin, g/dL", 3.0, 25.0, 0.1)]
+MAX_REPORT_MB = 5
+
+
+def _open_report_tool():
+    """From Arnold: open the Safe-to-Train page with the report check shown first."""
+    st.session_state["_report_first"] = True
+    _go(SAFE_CHECK)
+
+
+def _report_section():
+    """Optional health report check. The PDF is read only inside this app: it is not sent to any AI service and not saved."""
+    import report_check as rc
+    with st.container(border=True, key="report_box"):
+        st.markdown(f"<div class='pub sc-group' style='margin-top:4px'>{ic('description', 22, '#ff4500')} Check my health report "
+                    "(optional)</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='pub pub-note'>{ic('lock', 20, '#c2410c')}<span>Your report is read only inside this app to find a "
+                    "few values. It is <b>not sent to any AI service</b> and <b>not saved</b>; it is forgotten when you close the page. "
+                    "Asking Arnold later sends only topic words such as \"high blood pressure\": no numbers, no name, no report.</span></div>",
+                    unsafe_allow_html=True)
+        up = st.file_uploader("Upload a PDF report from your computer", type=["pdf"], key="rc_file",
+                              help=f"Typed PDF reports work best (up to {MAX_REPORT_MB} MB). For a photo of a report, type the values below.")
+        if up is not None and st.session_state.get("_rc_file_id") != up.file_id:
+            st.session_state["_rc_file_id"] = up.file_id
+            if up.size > MAX_REPORT_MB * 1024 * 1024:
+                st.session_state["_rc_found"] = -1
+            else:
+                found = rc.find_values(rc.pdf_text(up.getvalue()))
+                for key, *_ in RC_FIELDS:
+                    st.session_state[f"rc_{key}"] = found.get(key)
+                st.session_state["_rc_found"] = sum(1 for key, *_ in RC_FIELDS if found.get(key) is not None)
+        n = st.session_state.get("_rc_found")
+        if n == -1:
+            st.error(f"That file is larger than {MAX_REPORT_MB} MB. Please upload a smaller PDF or type the values below.")
+        elif n == 0:
+            st.warning("No values could be read from this report (it may be a scanned photo). Please type the values below.",
+                       icon=":material/edit:")
+        elif n:
+            st.success(f"Found {n} of {len(RC_FIELDS)} values in your report. Please check them below and correct anything that is wrong.",
+                       icon=":material/fact_check:")
+
+        st.markdown("<div class='pub ar-p'>Leave a box empty if that test is not in your report.</div>", unsafe_allow_html=True)
+        gender = st.radio("Gender (used for the haemoglobin range)", ["Male", "Female"], horizontal=True, key="rc_gender")
+        cols = st.columns(2)
+        for i, (key, label, lo, hi, step) in enumerate(RC_FIELDS):
+            st.session_state.setdefault(f"rc_{key}", None)
+            cols[i % 2].number_input(label, min_value=lo, max_value=hi, step=step, key=f"rc_{key}", placeholder="not tested")
+        if st.button("Check these values", key="rc_check", icon=":material/monitor_heart:", width="stretch"):
+            values = {key: st.session_state.get(f"rc_{key}") for key, *_ in RC_FIELDS}
+            if all(v is None for v in values.values()):
+                st.warning("Please enter at least one value.")
+            else:
+                st.session_state["_rc_result"] = rc.assess(values, gender)
+        if "_rc_result" in st.session_state:
+            _report_result(*st.session_state["_rc_result"])
+
+
+def _report_result(findings, urgent):
+    import report_check as rc
+    if urgent:
+        st.markdown(f"<div class='pub res warn' style='background:#fef2f2;border-color:#fca5a5;color:#7f1d1d'>{ic('emergency', 38, '#dc2626')}"
+                    "<div><b>Please get medical help today</b>Your blood pressure is in the very high range. Do not exercise. "
+                    "If you also have chest pain, breathlessness, a severe headache or blurred vision, call 112 now.</div></div>",
+                    unsafe_allow_html=True)
+        return
+    rows = "".join(f"<div class='wk'><span class='d' style='flex:0 0 150px;color:{'#dc2626' if f['flag'] else '#059669'}'>{html.escape(f['label'])}</span>"
+                   f"<span style='flex:0 0 110px'><b>{html.escape(f['value'])}</b></span><span>{html.escape(f['category'])}"
+                   f"<br><small style='color:#64748b'>Range: {html.escape(f['source'])}</small></span></div>" for f in findings)
+    flagged = [f for f in findings if f["flag"]]
+    if flagged:
+        st.markdown(f"<div class='pub res warn'>{ic('warning', 38, '#ea580c')}<div><b>Please see a doctor before you start training</b>"
+                    f"{len(flagged)} of your values are outside the usual range. That does not mean you cannot exercise; a doctor "
+                    "should tell you what is safe for you first.</div></div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div class='pub res ok'>{ic('check_circle', 38, '#059669')}<div><b>These values do not flag anything</b>"
+                    "They are within the usual adult ranges. This is not a medical check and does not mean you are fit for any "
+                    "exercise; start gradually.</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='pub side-card'><h5>{ic('lab_profile', 20, '#ff4500')} Your values</h5>{rows}"
+                "<p style='margin-top:8px'>Your report's own lab range is the one to trust if it differs from these general adult ranges.</p></div>",
+                unsafe_allow_html=True)
+    if flagged:
+        qs = "".join(f"<li>{html.escape(q)}</li>" for f in flagged for q in f["questions"])
+        st.markdown(f"<div class='pub nx-box'><div class='nx-h'>{ic('stethoscope', 22, '#ff4500')} Questions to ask your doctor</div>"
+                    f"<ol>{qs}</ol></div>", unsafe_allow_html=True)
+        question = rc.arnold_question(findings)
+        fallback = "Here are the questions to take to your doctor:\n\n" + "\n".join(f"- {q}" for f in flagged for q in f["questions"])
+        st.button(f"Ask {HELPER_NAME} about this", key="rc_ask", icon=":material/auto_awesome:",
+                  on_click=_queue, args=(question, fallback, True), width="stretch")
+        st.caption(f"Asking {HELPER_NAME} sends only these topic words: " + "; ".join(f["topic"] for f in flagged) + ". " + advisor.DISCLAIMER)
+    else:
+        st.caption(advisor.DISCLAIMER)
+
+
 def _readiness_view():
+    report_first = st.session_state.get("_report_first", False)  # opened from Arnold's "Check a health report"
     with st.container(key="tool_ready"):
         _card_header("health_and_safety", SAFE_CHECK, "Find out in one minute whether you should see a doctor before you start training.")
+        if report_first:
+            _report_section()
         st.markdown(f"<div class='pub sc-badges'><span>{ic('checklist', 18)} 7 questions</span><span>{ic('timer', 18)} 1 minute</span>"
                     f"<span>{ic('lock', 18)} Answers are not saved</span><span>{ic('verified', 18)} Based on the PAR-Q</span></div>"
                     "<div class='pub ar-p' style='text-align:center'>Answer Yes or No. The PAR-Q (Physical Activity Readiness "
@@ -784,6 +889,8 @@ def _readiness_view():
             st.session_state["_parq"] = [a == "Yes" for a in answers]
         if "_parq" in st.session_state:
             _readiness_result(st.session_state["_parq"])
+        if not report_first:
+            _report_section()
 
 
 def _plan_view():
