@@ -1,8 +1,14 @@
 import base64
+from functools import lru_cache
 from pathlib import Path
 import streamlit as st
 
 BASE_DIR = Path(__file__).parent
+
+
+@lru_cache(maxsize=1)  # read and encode the background once, not on every page view
+def _background_b64():
+    return base64.b64encode((BASE_DIR / "background.jpg").read_bytes()).decode()
 
 
 def apply_theme():
@@ -46,8 +52,7 @@ def apply_theme():
     [data-testid="stSidebarUserContent"]{padding-top:.4rem !important;}
     </style>
     """, unsafe_allow_html=True)
-    with open(BASE_DIR / "background.jpg", "rb") as f:
-        data = base64.b64encode(f.read()).decode()
+    data = _background_b64()
 
     st.markdown(f"""
     <style>
@@ -70,6 +75,10 @@ def apply_theme():
     # ---------------- CUSTOM CSS ---------------- #
     st.markdown("""
     <style>
+    /* real icons inside HTML text (Material Symbols, the font Streamlit already ships) */
+    .ms{font-family:'Material Symbols Rounded' !important;font-weight:normal;font-style:normal;font-size:1.15em;line-height:1;
+        display:inline-block;vertical-align:-0.18em;letter-spacing:normal;text-transform:none;white-space:nowrap;
+        font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;}
     /* Main Heading */
     h1{
         color:#ff4500 !important;
@@ -139,29 +148,29 @@ def render_home():
     col1, col2, col3 = st.columns([1,3,1])
 
     with col1:
-        st.image(str(BASE_DIR / "leftgym.png"), width='stretch')
+        st.image(str(BASE_DIR / "leftgym.jpg"), width='stretch')
 
     with col2:
         st.markdown("""
         <div style = 'display:flex;flex-direction:column;'>
-        <h1>💪 TA FITNESS GYM 🏋️‍♂️</h1>
+        <h1><span class="ms">fitness_center</span> TA FITNESS GYM <span class="ms">fitness_center</span></h1>
         <div style='text-align:center;
         font-size:22px;
         color:black;
         margin-bottom:25px;'>
 
-        🔥 Build Strength • 💪 Stay Fit • 🏆 Transform Yourself 🔥
+        <span class="ms">local_fire_department</span> Build Strength • <span class="ms">fitness_center</span> Stay Fit • <span class="ms">emoji_events</span> Transform Yourself <span class="ms">local_fire_department</span>
 
         </div>
 
         <h3 style='text-align:center;color:#6127F5'>
-        Welcome to TA Fitness Membership Management System 💪
+        Welcome to TA Fitness Membership Management System <span class="ms">fitness_center</span>
         </h3>
         </div>
         """, unsafe_allow_html=True)
 
     with col3:
-        st.image(str(BASE_DIR / "rightgym.png"), width='stretch')
+        st.image(str(BASE_DIR / "rightgym.jpg"), width='stretch')
 
     # ================= OFFERS MARQUEE =================
     st.markdown("""
@@ -177,12 +186,12 @@ def render_home():
     margin-bottom:20px;
     ">
 
-    🔥 SPECIAL FITNESS OFFER 🔥 |
-    💪 1 Month Plan = ₹1000 |
-    🏋️ 3 Months Plan = ₹2400 (Save ₹600) |
-    🏆 6 Months Plan = ₹4200 (Save ₹1800) |
-    👑 12 Months Plan = ₹7000 (Save ₹5000) |
-    📞 Join Today & Transform Yourself!
+    <span class="ms">local_fire_department</span> SPECIAL FITNESS OFFER <span class="ms">local_fire_department</span> |
+    <span class="ms">fitness_center</span> 1 Month Plan = ₹1000 |
+    <span class="ms">fitness_center</span> 3 Months Plan = ₹2400 (Save ₹600) |
+    <span class="ms">emoji_events</span> 6 Months Plan = ₹4200 (Save ₹1800) |
+    <span class="ms">workspace_premium</span> 12 Months Plan = ₹7000 (Save ₹5000) |
+    <span class="ms">call</span> Join Today & Transform Yourself!
 
     </marquee>
     """, unsafe_allow_html=True)
@@ -192,24 +201,24 @@ def render_home():
     <div style='display:flex;justify-content:space-around;gap:15px;margin-bottom:20px;'>
 
     <div style='background:#FF6B6B;padding:15px;border-radius:15px;width:22%;text-align:center;color:white'>
-    <h3>💪 1 Month</h3>
+    <h3><span class="ms">fitness_center</span> 1 Month</h3>
     <h2>₹1000</h2>
     </div>
 
     <div style='background:#4ECDC4;padding:15px;border-radius:15px;width:22%;text-align:center;color:white'>
-    <h3>🏋️ 3 Months</h3>
+    <h3><span class="ms">fitness_center</span> 3 Months</h3>
     <h2>₹2400</h2>
     <p>Save ₹600</p>
     </div>
 
     <div style='background:#45B7D1;padding:15px;border-radius:15px;width:22%;text-align:center;color:white'>
-    <h3>🏆 6 Months</h3>
+    <h3><span class="ms">emoji_events</span> 6 Months</h3>
     <h2>₹4200</h2>
     <p>Save ₹1800</p>
     </div>
 
     <div style='background:#9B59B6;padding:15px;border-radius:15px;width:22%;text-align:center;color:white'>
-    <h3>👑 12 Months</h3>
+    <h3><span class="ms">workspace_premium</span> 12 Months</h3>
     <h2>₹7000</h2>
     <p>Save ₹5000</p>
     </div>
@@ -221,7 +230,7 @@ def render_home():
     # ================= QUICK ACCESS =================
     pages = st.session_state.get("_pages", {})
     user = st.session_state.get("user", {})
-    st.markdown(f"### 👋 Welcome back, {user.get('Name', '')}!")
+    st.markdown(f"### :material/waving_hand: Welcome back, {user.get('Name', '')}!")
     st.caption(f"Signed in as {user.get('Role', '')} - pick an option below or from the menu on the left.")
     keys = [k for k in pages if k != "home"]
     for start in range(0, len(keys), 3):

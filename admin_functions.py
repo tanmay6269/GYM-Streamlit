@@ -99,7 +99,7 @@ def edit_staff():
                             smt.execute(query, params)
                             db.commit()
                             db.close()
-                            st.success("✅ Staff member updated successfully!")
+                            st.success(":material/check_circle: Staff member updated successfully!")
 
                             import time
                             time.sleep(1)
@@ -117,40 +117,40 @@ from datetime import datetime
 import plotly.express as px
 
 def view_reports():
-    st.title("📊 Gym Analytics & Reports")
+    st.title(":material/bar_chart: Gym Analytics & Reports")
 
     # Report type selector with icons
     report_type = st.selectbox(
         "Select Report Type",
         [
-            "📈 Dashboard Overview",
-            "👥 Membership Analytics",
-            "💰 Revenue Reports",
-            "📋 Attendance Analytics",
-            "⚠️ Expiring Memberships"
+            "Dashboard Overview",
+            "Membership Analytics",
+            "Revenue Reports",
+            "Attendance Analytics",
+            "Expiring Memberships"
         ]
     )
 
     st.markdown("---")
 
     # ==================== DASHBOARD OVERVIEW ====================
-    if report_type == "📈 Dashboard Overview":
+    if report_type == "Dashboard Overview":
         dashboard_overview()
 
     # ==================== MEMBERSHIP ANALYTICS ====================
-    elif report_type == "👥 Membership Analytics":
+    elif report_type == "Membership Analytics":
         membership_analytics()
 
     # ==================== REVENUE REPORTS ====================
-    elif report_type == "💰 Revenue Reports":
+    elif report_type == "Revenue Reports":
         revenue_reports()
 
     # ==================== ATTENDANCE ANALYTICS ====================
-    elif report_type == "📋 Attendance Analytics":
+    elif report_type == "Attendance Analytics":
         attendance_analytics()
 
     # ==================== EXPIRING MEMBERSHIPS ====================
-    elif report_type == "⚠️ Expiring Memberships":
+    elif report_type == "Expiring Memberships":
         expiring_memberships()
 
 # ---------------------------------------------------------------
@@ -194,7 +194,7 @@ def dashboard_overview():
         db.close()
 
         # Metrics Row 1
-        st.subheader("📊 Key Metrics")
+        st.subheader(":material/bar_chart: Key Metrics")
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
@@ -246,7 +246,7 @@ def dashboard_overview():
             col1, col2 = st.columns(2)
 
             with col1:
-                st.subheader("📊 Active Members by Plan")
+                st.subheader(":material/bar_chart: Active Members by Plan")
                 df_plans = pd.DataFrame(plan_data)
                 fig = px.pie(df_plans, values='Count', names='Plan',
                             color_discrete_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1', '#9B59B6'],
@@ -256,7 +256,7 @@ def dashboard_overview():
                 st.plotly_chart(fig, width='stretch')
 
             with col2:
-                st.subheader("📈 Plan Distribution")
+                st.subheader(":material/trending_up: Plan Distribution")
                 fig = px.bar(df_plans, x='Plan', y='Count',
                             color='Plan',
                             color_discrete_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1', '#9B59B6'],
@@ -267,7 +267,7 @@ def dashboard_overview():
 
         # Revenue Overview
         st.markdown("---")
-        st.subheader("💰 Revenue Overview (Active Members)")
+        st.subheader(":material/payments: Revenue Overview (Active Members)")
 
         if plan_data:
             revenue_data = []
@@ -308,7 +308,7 @@ def dashboard_overview():
 # ---------------------------------------------------------------
 
 def membership_analytics():
-    st.subheader("👥 Membership Analytics")
+    st.subheader("Membership Analytics")
 
     # Filters
     col1, col2, col3 = st.columns(3)
@@ -358,7 +358,7 @@ def membership_analytics():
             col1, col2 = st.columns(2)
 
             with col1:
-                st.subheader("⚥ Gender Distribution")
+                st.subheader(":material/wc: Gender Distribution")
                 gender_counts = df['gender'].value_counts()
                 fig = px.pie(values=gender_counts.values, names=gender_counts.index,
                             color_discrete_sequence=['#3498db', '#e74c3c', '#2ecc71'])
@@ -367,7 +367,7 @@ def membership_analytics():
                 st.plotly_chart(fig, width='stretch')
 
             with col2:
-                st.subheader("💪 Plan Distribution")
+                st.subheader(":material/fitness_center: Plan Distribution")
                 plan_counts = df['membershipplan'].value_counts()
                 fig = px.bar(x=plan_counts.index, y=plan_counts.values,
                             color=plan_counts.index,
@@ -377,7 +377,7 @@ def membership_analytics():
 
             # Age Distribution (if DOB available)
             st.markdown("---")
-            st.subheader("📅 Membership Join Trend")
+            st.subheader(":material/calendar_month: Membership Join Trend")
 
             try:
                 df['join_date'] = pd.to_datetime(df['membershipstart'])
@@ -393,7 +393,7 @@ def membership_analytics():
 
             # Detailed Table
             st.markdown("---")
-            st.subheader("📋 Member Details")
+            st.subheader(":material/assignment: Member Details")
 
             # Show only relevant columns
             display_df = df[['memberid', 'membername', 'gender', 'membershipplan', 'membershipstart', 'membershipend', 'mobilenumber']]
@@ -408,7 +408,7 @@ def membership_analytics():
 # ---------------------------------------------------------------
 
 def revenue_reports():
-    st.subheader("💰 Revenue Reports")
+    st.subheader("Revenue Reports")
 
     # Time period selector
     col1, col2 = st.columns(2)
@@ -472,7 +472,7 @@ def revenue_reports():
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    st.subheader("📊 Revenue by Plan")
+                    st.subheader(":material/bar_chart: Revenue by Plan")
                     df = pd.DataFrame(plan_revenue)
                     fig = px.bar(df, x='membershipplan', y='revenue',
                                 color='membershipplan',
@@ -483,7 +483,7 @@ def revenue_reports():
                     st.plotly_chart(fig, width='stretch')
 
                 with col2:
-                    st.subheader("🥧 Revenue Share")
+                    st.subheader(":material/pie_chart: Revenue Share")
                     fig = px.pie(df, values='revenue', names='membershipplan',
                                 color_discrete_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1', '#9B59B6'])
                     fig.update_traces(textinfo='percent+label')
@@ -491,7 +491,7 @@ def revenue_reports():
                     st.plotly_chart(fig, width='stretch')
 
             elif view_type == "Monthly Trend":
-                st.subheader("📈 Monthly Revenue Trend")
+                st.subheader(":material/trending_up: Monthly Revenue Trend")
                 # This would need payment history table
                 try:
                     db = get_db()
@@ -521,7 +521,7 @@ def revenue_reports():
 # ---------------------------------------------------------------
 
 def attendance_analytics():
-    st.subheader("📋 Attendance Analytics")
+    st.subheader("Attendance Analytics")
 
     try:
         db = get_db()
@@ -558,7 +558,7 @@ def attendance_analytics():
             st.markdown("---")
 
             # Weekly attendance trend
-            st.subheader("📈 Last 7 Days Attendance")
+            st.subheader(":material/trending_up: Last 7 Days Attendance")
             smt.execute("""
                 SELECT attendance_date, COUNT(DISTINCT member_id) as count
                 FROM attendance
@@ -577,7 +577,7 @@ def attendance_analytics():
 
             # Peak hours
             st.markdown("---")
-            st.subheader("⏰ Peak Hours")
+            st.subheader(":material/schedule: Peak Hours")
             smt.execute("""
                 SELECT HOUR(check_in_time) as hour, COUNT(*) as count
                 FROM attendance
@@ -594,7 +594,7 @@ def attendance_analytics():
                 st.plotly_chart(fig, width='stretch')
 
         except sql.err.ProgrammingError:
-            st.info("📋 Attendance tracking will show data after members start checking in")
+            st.info(":material/assignment: Attendance tracking will show data after members start checking in")
             st.info("Use the Team panel to mark attendance")
 
         db.close()
@@ -605,7 +605,7 @@ def attendance_analytics():
 # ---------------------------------------------------------------
 
 def expiring_memberships():
-    st.subheader("⚠️ Expiring Memberships")
+    st.subheader("Expiring Memberships")
 
     # Time filter
     time_frame = st.selectbox("Show memberships expiring in:", ["7 Days", "15 Days", "30 Days", "All Expired"])
@@ -647,9 +647,9 @@ def expiring_memberships():
             count = len(members)
 
             if time_frame == "All Expired":
-                st.warning(f"🚨 {count} members have expired memberships")
+                st.warning(f":material/emergency: {count} members have expired memberships")
             else:
-                st.warning(f"⚠️ {count} memberships expiring within {time_frame.lower()}")
+                st.warning(f":material/warning: {count} memberships expiring within {time_frame.lower()}")
 
             # Create summary
             # Display with days remaining
@@ -663,16 +663,16 @@ def expiring_memberships():
                 days_left = (end_date - datetime.now().date()).days
 
                 if days_left < 0:
-                    status = "🔴 Expired"
+                    status = ":red[:material/circle:] Expired"
                     days_text = f"{abs(days_left)} days ago"
                 elif days_left == 0:
-                    status = "🟡 Expires Today"
+                    status = ":orange[:material/circle:] Expires Today"
                     days_text = "Today"
                 elif days_left <= 7:
-                    status = "🟠 Expiring Soon"
+                    status = ":orange[:material/circle:] Expiring Soon"
                     days_text = f"{days_left} days left"
                 else:
-                    status = "🟢 Active"
+                    status = ":green[:material/circle:] Active"
                     days_text = f"{days_left} days left"
 
                 with st.expander(f"{status} | {member['membername']} | {member['membershipplan']} | {days_text}"):
@@ -698,7 +698,7 @@ def expiring_memberships():
 
             # Pie chart
             st.markdown("---")
-            st.subheader("📊 Expiry Status Distribution")
+            st.subheader(":material/bar_chart: Expiry Status Distribution")
 
             expired_count = len([m for m in members if (m['membershipend'] if isinstance(m['membershipend'], datetime) else datetime.strptime(str(m['membershipend']), '%Y-%m-%d').date()) < datetime.now().date()])
             expiring_7 = len([m for m in members if 0 <= ((m['membershipend'] if isinstance(m['membershipend'], datetime) else datetime.strptime(str(m['membershipend']), '%Y-%m-%d').date()) - datetime.now().date()).days <= 7])
@@ -716,9 +716,9 @@ def expiring_memberships():
 
         else:
             if time_frame == "All Expired":
-                st.success("✅ No expired memberships!")
+                st.success(":material/check_circle: No expired memberships!")
             else:
-                st.success(f"✅ No memberships expiring in {time_frame.lower()}!")
+                st.success(f":material/check_circle: No memberships expiring in {time_frame.lower()}!")
 
     except Exception as e:
         st.error(f"Error: {e}")
@@ -731,7 +731,7 @@ def admin_renew_membership():
     st.subheader("1: Search Member")
     id = st.text_input("Enter Member ID to renew:")
 
-    if st.button("🔍 Search Member", width='stretch'):
+    if st.button(":material/search: Search Member", width='stretch'):
         if not id:
             st.warning("Please enter a Member ID")
             return
@@ -745,10 +745,10 @@ def admin_renew_membership():
 
             if record:
                 st.session_state.renew_record = record
-                st.success(f"✅ Member Found: {record['membername']}")
+                st.success(f":material/check_circle: Member Found: {record['membername']}")
                 st.rerun()
             else:
-                st.error("❌ Member not found")
+                st.error(":material/cancel: Member not found")
                 if 'renew_record' in st.session_state:
                     del st.session_state.renew_record
         except Exception as e:
@@ -803,7 +803,7 @@ def admin_renew_membership():
                 amount = 7000
 
             st.date_input("New End Date:", value=new_end_date, disabled=True)
-            st.metric("💰 Amount to Pay", f"₹{amount}")
+            st.metric(":material/payments: Amount to Pay", f"₹{amount}")
 
         st.markdown("---")
         st.subheader("3: Payment Details")
@@ -812,14 +812,14 @@ def admin_renew_membership():
         with col1:
             payment_mode = st.selectbox("Payment Mode:", ["Cash", "Card", "UPI", "Bank Transfer"])
         with col2:
-            payment_received = st.checkbox("✅ Payment Received", value=True)
+            payment_received = st.checkbox(":material/check_circle: Payment Received", value=True)
 
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("✅ Renew Membership", width='stretch', type="primary"):
+            if st.button(":material/check_circle: Renew Membership", width='stretch', type="primary"):
                 if not payment_received:
-                    st.warning("⚠️ Please confirm payment received")
+                    st.warning(":material/warning: Please confirm payment received")
                     return
 
                 try:
@@ -862,7 +862,7 @@ def admin_renew_membership():
                     db.commit()
                     db.close()
 
-                    st.success(f"✅ Membership renewed for {record['membername']}!")
+                    st.success(f":material/check_circle: Membership renewed for {record['membername']}!")
                     st.balloons()
 
                     import time
@@ -871,10 +871,10 @@ def admin_renew_membership():
                     st.rerun()
 
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f":material/cancel: Error: {e}")
 
         with col2:
-            if st.button("❌ Cancel", width='stretch'):
+            if st.button(":material/cancel: Cancel", width='stretch'):
                 del st.session_state.renew_record
                 st.rerun()
 
@@ -884,7 +884,7 @@ def manage_payments():
     st.markdown("---")
 
     # Tabs for record payment and view history
-    tab1, tab2 = st.tabs(["💳 Record Payment", "📋 Payment History"])
+    tab1, tab2 = st.tabs([":material/credit_card: Record Payment", ":material/assignment: Payment History"])
 
     with tab1:
         st.subheader("Record New Payment")
@@ -899,9 +899,9 @@ def manage_payments():
             payment_date = st.date_input("Payment Date:", key="pay_date")
             payment_mode = st.selectbox("Payment Mode:", ["Cash", "Card", "UPI", "Bank Transfer"], key="pay_mode")
 
-        if st.button("💳 Record Payment", width='stretch', type="primary"):
+        if st.button(":material/credit_card: Record Payment", width='stretch', type="primary"):
             if not member_id or amount == 0:
-                st.warning("⚠️ Please fill all fields")
+                st.warning(":material/warning: Please fill all fields")
                 return
 
             try:
@@ -926,7 +926,7 @@ def manage_payments():
                 member = smt.fetchone()
 
                 if not member:
-                    st.error("❌ Member ID not found")
+                    st.error(":material/cancel: Member ID not found")
                     db.close()
                     return
 
@@ -938,11 +938,11 @@ def manage_payments():
                 db.commit()
                 db.close()
 
-                st.success(f"✅ Payment of ₹{amount} recorded for {member['membername']} (ID: {member_id})")
+                st.success(f":material/check_circle: Payment of ₹{amount} recorded for {member['membername']} (ID: {member_id})")
                 st.balloons()
 
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                st.error(f":material/cancel: Error: {e}")
 
     with tab2:
         st.subheader("Recent Payments")
@@ -971,11 +971,11 @@ def manage_payments():
                     st.markdown("---")
                     st.dataframe(payments, width='stretch', hide_index=True)
                 else:
-                    st.info("📭 No payments recorded yet")
+                    st.info(":material/inbox: No payments recorded yet")
             except sql.err.ProgrammingError:
-                st.info("📭 Payment tracking will be available after first payment is recorded")
+                st.info(":material/inbox: Payment tracking will be available after first payment is recorded")
 
             db.close()
 
         except Exception as e:
-            st.error(f"❌ Error loading payments: {e}")
+            st.error(f":material/cancel: Error loading payments: {e}")

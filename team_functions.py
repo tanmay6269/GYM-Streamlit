@@ -10,7 +10,7 @@ def mark_attendance():
 
     member_id = st.text_input("Enter Member ID:")
 
-    if st.button("🔍 Check Member", width='stretch'):
+    if st.button(":material/search: Check Member", width='stretch'):
         if not member_id:
             st.warning("Please enter Member ID")
             return
@@ -57,7 +57,7 @@ def mark_attendance():
                 db.close()
                 st.rerun()
             else:
-                st.error("❌ Member not found or membership expired")
+                st.error(":material/cancel: Member not found or membership expired")
                 if 'attendance_member' in st.session_state:
                     del st.session_state.attendance_member
                     st.session_state.pop('attendance_marked', None)
@@ -71,7 +71,7 @@ def mark_attendance():
     if 'attendance_member' in st.session_state:
         member = st.session_state.attendance_member
 
-        st.success(f"✅ Active Member: {member['membername']}")
+        st.success(f":material/check_circle: Active Member: {member['membername']}")
 
         col1, col2 = st.columns(2)
         with col1:
@@ -87,16 +87,16 @@ def mark_attendance():
 
         # Show mark button or already marked message
         if st.session_state.attendance_marked:
-            st.warning(f"⚠️ Attendance already marked today at {st.session_state.attendance_time}")
+            st.warning(f":material/warning: Attendance already marked today at {st.session_state.attendance_time}")
 
-            if st.button("🔄 Check Another Member", width='stretch'):
+            if st.button(":material/sync: Check Another Member", width='stretch'):
                 del st.session_state.attendance_member
                 del st.session_state.attendance_marked
                 if 'attendance_time' in st.session_state:
                     del st.session_state.attendance_time
                 st.rerun()
         else:
-            if st.button("✅ Mark Attendance", width='stretch', type="primary"):
+            if st.button(":material/check_circle: Mark Attendance", width='stretch', type="primary"):
                 try:
                     db = get_db()
                     smt = db.cursor()
@@ -111,7 +111,7 @@ def mark_attendance():
                     db.commit()
                     db.close()
 
-                    st.success(f"✅ Attendance marked for {member['membername']} at {current_time}!")
+                    st.success(f":material/check_circle: Attendance marked for {member['membername']} at {current_time}!")
                     st.balloons()
 
                     # Clear and refresh
@@ -122,13 +122,13 @@ def mark_attendance():
                     st.rerun()
 
                 except sql.err.IntegrityError:
-                    st.warning("⚠️ Attendance already marked today")
+                    st.warning(":material/warning: Attendance already marked today")
                 except Exception as e:
                     st.error(f"Error: {e}")
 
     # Today's attendance list
     st.markdown("---")
-    st.subheader("📋 Today's Attendance")
+    st.subheader(":material/assignment: Today's Attendance")
 
     try:
         db = get_db()
@@ -147,11 +147,11 @@ def mark_attendance():
 
             if records:
                 st.dataframe(records, width='stretch', hide_index=True)
-                st.success(f"✅ Total Present Today: {len(records)}")
+                st.success(f":material/check_circle: Total Present Today: {len(records)}")
             else:
-                st.info("📭 No attendance records for today")
+                st.info(":material/inbox: No attendance records for today")
         except sql.err.ProgrammingError:
-            st.info("📋 Attendance will show after first check-in")
+            st.info(":material/assignment: Attendance will show after first check-in")
 
         db.close()
 
@@ -166,7 +166,7 @@ def team_renew_membership():
     # Use a different session state key to avoid conflict
     id = st.text_input("Enter Member ID to renew:")
 
-    if st.button("🔍 Search Member", width='stretch'):
+    if st.button(":material/search: Search Member", width='stretch'):
         if not id:
             st.warning("Please enter Member ID")
             return
@@ -182,7 +182,7 @@ def team_renew_membership():
                 st.session_state.team_renew_data = record
                 st.rerun()
             else:
-                st.error("❌ Member not found")
+                st.error(":material/cancel: Member not found")
                 if 'team_renew_data' in st.session_state:
                     del st.session_state.team_renew_data
         except Exception as e:
@@ -192,7 +192,7 @@ def team_renew_membership():
     if 'team_renew_data' in st.session_state:
         record = st.session_state.team_renew_data
 
-        st.success(f"✅ Member Found: {record['membername']}")
+        st.success(f":material/check_circle: Member Found: {record['membername']}")
         st.markdown("---")
 
         col1, col2 = st.columns(2)
@@ -219,20 +219,20 @@ def team_renew_membership():
                 amount = 7000
 
             st.date_input("New End Date:", value=new_end_date, disabled=True)
-            st.metric("💰 Amount to Pay", f"₹{amount}")
+            st.metric(":material/payments: Amount to Pay", f"₹{amount}")
 
         col1, col2 = st.columns(2)
         with col1:
             payment_mode = st.selectbox("Payment Mode:", ["Cash", "Card", "UPI", "Bank Transfer"])
         with col2:
-            payment_received = st.checkbox("✅ Payment Received", value=True)
+            payment_received = st.checkbox(":material/check_circle: Payment Received", value=True)
 
         col1, col2 = st.columns(2)
 
         with col1:
-            if st.button("✅ Renew Membership", width='stretch', type="primary"):
+            if st.button(":material/check_circle: Renew Membership", width='stretch', type="primary"):
                 if not payment_received:
-                    st.warning("⚠️ Please confirm payment received")
+                    st.warning(":material/warning: Please confirm payment received")
                     return
 
                 try:
@@ -274,7 +274,7 @@ def team_renew_membership():
                     db.commit()
                     db.close()
 
-                    st.success(f"✅ Membership renewed for {record['membername']}!")
+                    st.success(f":material/check_circle: Membership renewed for {record['membername']}!")
                     st.balloons()
 
                     # Clear and refresh
@@ -284,9 +284,9 @@ def team_renew_membership():
                     st.rerun()
 
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f":material/cancel: Error: {e}")
 
         with col2:
-            if st.button("❌ Cancel", width='stretch'):
+            if st.button(":material/cancel: Cancel", width='stretch'):
                 del st.session_state.team_renew_data
                 st.rerun()

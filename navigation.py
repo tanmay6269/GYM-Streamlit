@@ -62,6 +62,11 @@ def _payments():
     manage_payments()
 
 
+def _join_requests():
+    from join import requests_page
+    requests_page()
+
+
 # ---------------- Team ----------------
 def _attendance():
     from team_functions import mark_attendance
@@ -123,6 +128,7 @@ _ADMIN = [
     ("reports", _reports, "View Reports", ":material/monitoring:", "reports"),
     ("renew", _admin_renew, "Membership Renewal", ":material/autorenew:", "renewal"),
     ("payments", _payments, "Payments", ":material/payments:", "payments"),
+    ("join_requests", _join_requests, "Join Requests", ":material/how_to_reg:", "join-requests"),
     ("feedback", _feedback, "Feedback", ":material/forum:", "feedback"),
 ]
 _TEAM = [
@@ -150,7 +156,7 @@ _FOOTER = {
     "Admin": {
         "plan_page": "renew",
         "GYM": ["all", "search", "renew", "payments"],
-        "ACCOUNT": ["add_staff", "edit_staff", "reports", "feedback"],
+        "ACCOUNT": ["add_staff", "edit_staff", "join_requests", "reports", "feedback"],
     },
     "Team": {
         "plan_page": "renew",
@@ -180,6 +186,9 @@ def build_pages(role):
 def all_url_paths():
     """Every page address used by any role (e.g. "my-attendance"), without the home page."""
     return sorted({path for spec in _ROLES.values() for (_, _, _, _, path) in spec if path})
+
+
+PUBLIC_PATHS = ["store", "advisor", "join"]  # pages anyone can open before login
 
 
 def footer_layout(role):

@@ -1,5 +1,6 @@
 import base64
 import html
+from functools import lru_cache
 from pathlib import Path
 
 import pymysql as sql
@@ -13,6 +14,7 @@ BASE_DIR = Path(__file__).parent
 ROLE_COLORS = {"Admin": "#dc2626", "Team": "#ea580c", "Member": "#2563eb"}
 
 
+@lru_cache(maxsize=1)  # read and encode the logo once, not on every page view
 def _logo_b64():
     return base64.b64encode((BASE_DIR / "gym.png").read_bytes()).decode()
 
@@ -121,7 +123,7 @@ def _card_html(r, show_private=False):
     when = r["created_at"].strftime("%d %b %Y, %I:%M %p") if r["created_at"] else ""
     meta = when
     if show_private and r["phone"]:
-        meta += f" &nbsp;•&nbsp; 📞 {html.escape(r['phone'])}"
+        meta += f" &nbsp;•&nbsp; :material/call: {html.escape(r['phone'])}"
     comment = f'<div class="fb-msg">{msg}</div>' if msg else ""
     return (
         '<div class="fb-card">'
@@ -196,7 +198,7 @@ def feedback_page():
             st.subheader("Rate TA Fitness")
             feedback_form(key="page")
     with right:
-        st.subheader("💬 What everyone is saying")
+        st.subheader(":material/forum: What everyone is saying")
         f1, f2 = st.columns(2)
         pick = f1.selectbox("Show", ["All ratings", "5 stars", "4 stars", "3 stars", "2 stars", "1 star"], key="fb_filter")
         who = f2.selectbox("From", ["Everyone", "Members", "Team", "Admin"], key="fb_who")
@@ -227,7 +229,7 @@ def render_footer(role, pages, show_latest=True):
         with h1:
             summary = (f" &nbsp; <span class='fb-stars'>{_stars(round(stats['avg']))}</span> "
                        f"{stats['avg']:.1f} / 5 ({stats['rated']})") if stats["rated"] else ""
-            st.markdown(f"### 💬 Latest feedback{summary}", unsafe_allow_html=True)
+            st.markdown(f"### :material/forum: Latest feedback{summary}", unsafe_allow_html=True)
         with h2:
             if "feedback" in pages:
                 st.page_link(pages["feedback"], label="See all feedback →")
@@ -245,7 +247,7 @@ def render_footer(role, pages, show_latest=True):
 <div class="ta-footer"><div class="ta-footer-brand">
 <div class="name"><img src="data:image/png;base64,{_logo_b64()}" alt="TA Fitness"> TA <span>Fitness</span></div>
 <p>Manage memberships, attendance, renewals and payments for your gym in one place.</p>
-<div class="ta-badge"><i></i> Demo gym platform</div>
+<div class="ta-badge"><i></i> Gym membership platform</div>
 </div></div>
 """, unsafe_allow_html=True)
     plan_page = pages.get(layout["plan_page"])
@@ -273,7 +275,6 @@ def render_footer(role, pages, show_latest=True):
                 feedback_form()
 
     st.markdown("""
-<div class="ta-note">TA Fitness is a prototype gym management system. All members, payments and attendance shown are demo data.</div>
 <div class="ta-bottom">
 <span>© 2026 TA Fitness. All rights reserved.</span>
 <span>Created by Tanmay Agrawal</span>

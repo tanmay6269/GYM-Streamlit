@@ -14,8 +14,8 @@ def load():
         t.sleep(0.0005)
     status.text("Completed")
 
-@st.dialog("              TA Fitness User Login                 ", dismissible=False)
-def login():
+@st.dialog("              TA Fitness User Login                 ", dismissible=True)
+def login(default_role="Admin"):
 
     # Get cookies from session state (set by app.py)
     cookies = st.session_state.get('_cookies')
@@ -26,14 +26,15 @@ def login():
     id = st.text_input("Enter User Id:")
     name = st.text_input("Enter User Name:")
     pwd = st.text_input("Enter Password:", type='password')
-    Role = st.selectbox("Login As", ["Admin", "Team", "Member"])
+    roles = ["Admin", "Team", "Member"]
+    Role = st.selectbox("Login As", roles, index=roles.index(default_role) if default_role in roles else 0)
 
-    if st.button("🚀 Login", width='stretch'):
+    if st.button("Login", icon=":material/login:", width='stretch'):
         if id == "" or name == "" or pwd == "":
             st.warning("Please Fill All Fields")
             return
         if valid_id(id) is None:
-            st.error("❌ Invalid ID, Name or Password")
+            st.error(":material/cancel: Invalid ID, Name or Password")
             return
         id = str(valid_id(id))  # " 12 " -> "12", so the cookie restores after a refresh
         name = name.strip()
@@ -46,7 +47,7 @@ def login():
             wait = lockout_remaining(smt, login_key)
             if wait:
                 db.close()
-                st.error(f"🔒 Too many failed attempts. Try again in about {wait} minute(s).")
+                st.error(f":material/lock: Too many failed attempts. Try again in about {wait} minute(s).")
                 return
 
             if Role == "Member":
@@ -100,14 +101,14 @@ def login():
                 st.success("Login Successful....")
 
                 if Role == "Member":
-                    st.success(f"Welcome {record['membername']} 🏋️")
+                    st.success(f"Welcome {record['membername']} :material/fitness_center:")
                 else:
-                    st.success(f"Welcome {record['User_Name']} 🏋️")
+                    st.success(f"Welcome {record['User_Name']} :material/fitness_center:")
 
                 t.sleep(1)
                 st.rerun()
             else:
-                st.error("❌ Invalid ID, Name or Password")
+                st.error(":material/cancel: Invalid ID, Name or Password")
 
         except Exception as e:
             st.error(f"Database Error : {e}")

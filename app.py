@@ -10,7 +10,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
     page_title="TA Fitness Gym",
-    page_icon="💪",
+    page_icon=":material/fitness_center:",
     layout="wide"
 )
 
@@ -26,14 +26,14 @@ if cookies.ready():
 elif not st.session_state.get('_cookies_seen'):
     # First run of this visit: the browser's cookies arrive on the next run. Register every
     # page address now (hidden), so a refresh on e.g. /payments stays on Payments.
-    from navigation import all_url_paths
+    from navigation import all_url_paths, PUBLIC_PATHS
 
     def _loading():
         pass
 
     st.navigation(
         [st.Page(_loading, title="Loading", url_path="", default=True)]
-        + [st.Page(_loading, title="Loading", url_path=p) for p in all_url_paths()],
+        + [st.Page(_loading, title="Loading", url_path=p) for p in all_url_paths() + PUBLIC_PATHS],
         position="hidden",
     )
     st.stop()
@@ -102,7 +102,7 @@ if cookies.ready() and cookies.get("logged_in") == "True" and not st.session_sta
             except Exception:
                 # database unreachable: keep the cookie and let the user retry,
                 # instead of logging them out for good
-                st.error("⚠️ Could not reach the database to restore your login. Please refresh the page in a moment.")
+                st.error(":material/warning: Could not reach the database to restore your login. Please refresh the page in a moment.")
                 st.stop()
 
         if verified:
@@ -140,10 +140,10 @@ if st.session_state.logged_in:
 
     # every menu option is its own page with its own URL, so the browser's
     # back / forward arrows move between options instead of leaving the site
-    current = st.navigation(ordered_pages)
+    current = st.navigation(ordered_pages, expanded=True)  # show every menu option (the default hides all but 10)
 
     with st.sidebar:
-        st.button("🚪 Logout", width="stretch", on_click=_clear_login)
+        st.button(":material/logout: Logout", width="stretch", on_click=_clear_login)
 
     from GYM import apply_theme
     from footer import render_footer
@@ -152,28 +152,25 @@ if st.session_state.logged_in:
     current.run()
     render_footer(role, pages, show_latest=(current.url_path != "feedback"))
 else:
-    # Logged out: only the login box. The navigation is replaced by hidden pages, so
-    # the old menu disappears; old addresses (e.g. a bookmarked /my-attendance, or the
-    # browser's back arrow after logout) also show the login box instead of a
-    # "page not found" message, and are then switched back to the main address.
-    def _login_screen():
-        if st.session_state.pop("_expired", False):
-            st.warning("⏰ Session expired. Please login again.")
-        from login import login
-        login()
+    # Logged out: the public pages (Home, Store, Ask Arnold) with a Login button.
+    # No sidebar or role menu is shown. Old addresses (e.g. a bookmarked /my-attendance, or
+    # the browser's back arrow after logout) land on Home instead of a "page not found"
+    # message, and are then switched back to the main address.
+    import join
+    import landing
+    from navigation import all_url_paths, PUBLIC_PATHS
 
-    from navigation import all_url_paths
-
-    # login screen only: no sidebar, no menu toggle, no top bar
-    st.markdown("""
-    <style>
-    [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"], [data-testid="stHeader"], [data-testid="stToolbar"]{display:none !important;}
-    </style>
-    """, unsafe_allow_html=True)
-    login_page = st.Page(_login_screen, title="Login", default=True)
-    old_addresses = [st.Page(_login_screen, title="Login", url_path=p) for p in all_url_paths()]
-    current = st.navigation([login_page, *old_addresses], position="hidden")
-    if current.url_path:  # an old address: move to the main address
-        st.switch_page(login_page)
+    home_page = st.Page(landing.home_page, title="Home", icon=":material/home:", default=True)
+    public = {
+        "home": home_page,
+        "store": st.Page(landing.store_page, title="Store", icon=":material/shopping_cart:", url_path="store"),
+        "advisor": st.Page(landing.advisor_page, title="Ask Arnold", icon=":material/smart_toy:", url_path="advisor"),
+        "join": st.Page(join.join_page, title="Join Now", icon=":material/how_to_reg:", url_path="join"),
+    }
+    st.session_state["_public_pages"] = public
+    old_addresses = [st.Page(landing.home_page, title="Home", url_path=p)
+                     for p in all_url_paths() if p not in PUBLIC_PATHS]
+    current = st.navigation([*public.values(), *old_addresses], position="hidden")
+    if current.url_path and current.url_path not in PUBLIC_PATHS:  # an old address: move to the main address
+        st.switch_page(home_page)
     current.run()

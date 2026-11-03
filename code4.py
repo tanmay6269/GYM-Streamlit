@@ -90,7 +90,7 @@ def edit_member():
         total_days = (med - msd).days
         months = total_days // 30
 
-        st.info(f"📅 Plan: **{plan}** | Duration: **{months} months ({total_days} days)** | Start: **{msd}** → End: **{med}**")
+        st.info(f":material/calendar_month: Plan: **{plan}** | Duration: **{months} months ({total_days} days)** | Start: **{msd}** → End: **{med}**")
 
         if st.button("Edit"):
             try:
@@ -121,7 +121,7 @@ def edit_member():
                 st.session_state.edit_record['mobilenumber'] = mob
 
                 load()
-                st.success("✅ Member Updated Successfully!")
+                st.success(":material/check_circle: Member Updated Successfully!")
 
             except Exception as e:
                 st.error(f"Error updating member: {e}")

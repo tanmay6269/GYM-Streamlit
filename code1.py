@@ -13,7 +13,7 @@ def insert_member():
 
 # -----------------------------------------------------------Admin--------------------------------------------------------
     if user_cookie == 'Admin':
-        mid = st.text_input("Enter Member ID:")
+        st.info("The Member ID is given automatically (the next number in the list).", icon=":material/tag:")
         mn = st.text_input("Enter Member Name:")
         mg = st.radio("Gender:", ['Male', 'Female', 'Other'])
         dob = st.text_input("Date Of Birth:")
@@ -45,9 +45,6 @@ def insert_member():
         mob = st.text_input("Enter Mobile Number:")
 
         if st.button("Submit"):
-            if valid_id(mid) is None:
-                st.error("Member ID must be a number")
-                return
             if valid_date(dob) is None:
                 st.error("Date Of Birth must be a valid date in YYYY-MM-DD format")
                 return
@@ -62,14 +59,11 @@ def insert_member():
             try:
                 db = get_db()
                 smt = db.cursor()
-                q = """
-                    INSERT INTO members (memberid, membername, dob, gender, address, membershipstart, membershipend, membershipplan, mobilenumber, Password)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """
-                smt.execute(q, (mid, mn, dob, mg, mc, msd, med, plan, mob, hash_password(mid)))
+                from join import create_member
+                new_id = create_member(smt, mn.strip(), dob, mg, mc, msd, med, plan, mob)
                 load()
                 db.commit()
-                st.success("Member Submitted Successfully...")
+                st.success(f"Member Submitted Successfully... Member ID: {new_id}")
             except Exception as e:
                 st.error(e)
             finally:
